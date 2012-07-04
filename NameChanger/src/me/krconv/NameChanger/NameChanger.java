@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import me.krconv.NameChanger.NameChanger;
 import net.minecraft.server.EntityPlayer;
@@ -22,7 +24,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class NameChanger extends JavaPlugin {
 	public final Logger logger = Logger.getLogger("Minecraft");
 	public static NameChanger plugin;
-	public Map<Player, String> RealToAltList = new HashMap<Player, String>();
+	//public Map<Player, String> RealToAltList = new HashMap<Player, String>();
+	public AutoAltManager autoAltManager = new AutoAltManager();
 
 	@Override
 	public void onDisable() {
@@ -41,6 +44,7 @@ public class NameChanger extends JavaPlugin {
 			saveDefaultConfig();
 			saveConfig();
 		}
+		autoAltManager.initialize(this);
 		this.logger.info(pdfFile.getName() + " v" + pdfFile.getVersion()
 				+ " has been enabled!");
 	}
@@ -183,19 +187,26 @@ public class NameChanger extends JavaPlugin {
 					}
 				} else if (args.length == 3) {
 					if (args[0].equalsIgnoreCase("auto")) {
-						if (player.hasPermission("namechanger.auto." + args[1]
-								+ "." + args[2])) {
-							Player target = getServer().getPlayer(args[1]);
-							RealToAltList.put(target, args[2]);
-							System.out.print("[NameChanger] "
-									+ player.getName() + " has set "
-									+ target.getName()
-									+ "'s name automatically change to "
-									+ args[1] + " on login!");
-							player.sendMessage(ChatColor.GREEN
-									+ "You have set " + target.getName()
-									+ " to automatically log in as " + args[2]
-									+ ".");
+						if (player.hasPermission("namechanger.auto." + args[1] + "." + args[2])) {
+							if (!isValidUserName(args[1])) {
+								// Validate target player name
+								player.sendMessage(ChatColor.RED + "<Target> '"  + args[1] + "' is not a possible Minecraft name.");
+								return false;
+							}
+							if (!isValidUserName(args[2])) {
+								// Validate alt name
+								player.sendMessage(ChatColor.RED + "Alt <Name> '"  + args[1] + "' is not a possible Minecraft name.");
+								return false;
+							}
+							//Player target = getServer().getPlayer(args[1]); // Changed this so that it works for offline players, I think
+							if (autoAltManager.setAltNameForPlayer(args[1], args[2])) {
+								// Successfully set automatic alt name for target player
+								System.out.print("[NameChanger] "
+										+ player.getName() + " has set "  + args[1] + "'s name automatically change to "
+										+ args[2] + " on login!");
+								player.sendMessage(ChatColor.GREEN
+										+ "You have set " + args[1] + " to automatically log in as " + args[2] + ".");	
+							}
 						}
 					} else {
 						player.sendMessage(ChatColor.RED
@@ -231,6 +242,12 @@ public class NameChanger extends JavaPlugin {
 		tracker.untrackEntity(playerOther);
 		playerOther.name = newName;
 		tracker.track(playerOther);
-
+	}
+	
+	public boolean isValidUserName(String toTest) {
+		// Ensure contains only valid characters and between 2-16 characters long
+		Pattern p = Pattern.compile("[A-Za-z0-9_]{2,16}");
+		Matcher m = p.matcher(toTest);
+		return m.matches();
 	}
 }

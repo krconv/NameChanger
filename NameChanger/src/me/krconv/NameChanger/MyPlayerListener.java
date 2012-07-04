@@ -21,31 +21,29 @@ public class MyPlayerListener implements Listener {
 	MyPlayerListener(NameChanger instance) {
 		plugin = instance;
 	}
-	
-	
-	
-	
 
 	@EventHandler
 	public void PlayerJoinAltChanger(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
 		player.sendMessage("hi");
-		if (plugin.RealToAltList.containsKey(player)) {
-			String target = plugin.RealToAltList.get(player);
+		//if (plugin.RealToAltList.containsKey(player)) {
+		String alt = plugin.autoAltManager.getAltNameForPlayer(player.getName());
+		//if (plugin.autoAltManager.doesPlayerHaveAlt(player.getName())) {
+		if (alt != null) {
+			//String target = plugin.RealToAltList.get(player);
 			player.sendMessage("hi");
-			if (player.getServer().getPlayer(target) == null) {
+			if (player.getServer().getPlayer(alt) == null) {
 				player.sendMessage("hi");
-				event.setJoinMessage(ChatColor.YELLOW
-						+ plugin.RealToAltList.get(player) + " has joined the game.");
+				event.setJoinMessage(ChatColor.YELLOW + alt + " has joined the game.");
 				System.out.print("[NameChanger] " + player.getName()
 						+ " automatically logged in as "
-						+ plugin.RealToAltList.get(player) + "!");
+						+ alt + "!");
 
 				player.saveData();
-				player.setPlayerListName(target);
-				player.setDisplayName(target);
+				player.setPlayerListName(alt);
+				player.setDisplayName(alt);
 				EntityPlayer playerSelf = ((CraftPlayer) player).getHandle();
-				setPlayerNameSelf(playerSelf, target);
+				setPlayerNameSelf(playerSelf, alt);
 				player.loadData();
 				player.teleport(player.getLocation());
 				player.setGameMode(player.getServer().getDefaultGameMode());
