@@ -1,0 +1,42 @@
+NEW CLASSES:
+
+AutoAltManager - This is what the plugin will use to run automatic alts. This is the class you will use.
+AutoAltDataAccess - This is never to be used direcly, it is only to be used by AutoAltManager.
+
+
+
+NEW FUNCTIONALITY:
+
+NameChanger.isValidUserName(String toTest)
+ - Ensures user name contains only valid characters and between 2-16 characters long
+
+AutoAltManager.doesPlayerHaveAlt(String PlayerName)
+ - Returns true if player has alt
+
+AutoAltManager.getAltNameForPlayer(String PlayerName)
+ - Return alt name associated with player name
+
+AutoAltManager.getPlayerNameForAlt(String AltName)
+ - Return player name associated with alt name
+
+AutoAltManager.setAltNameForPlayer(String PlayerName, String AltName)
+ - Stores new alt name for a player name
+ - Confirms valid PlayerName and AltName before saving (should already be validated, just making sure)
+
+AutoAltManager.removeAltNameForPlayer(String PlayerName)
+ - Removes stored alt name for a player name, returns true if done, false if no alt was found
+
+
+
+NOTES:
+
+When taking in a player name or alt name:
+ - Trim leading/trailing spaces by doing name = String.Trim(name);
+ - Check name using isValidUserName(String toTest) - added this to confirm correct length and characters
+
+Before calling setAltNameForPlayer(), first make sure that getPlayerNameForAlt(AltName)==null
+(Do not want alt to be listed for more than one player at once)
+
+
+
+

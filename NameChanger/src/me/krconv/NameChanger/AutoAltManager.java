@@ -28,8 +28,7 @@ public class AutoAltManager {
 
 	public boolean setAltNameForPlayer(String PlayerName, String AltName) {
 		// Stores new alt name for a player name
-		// RULES - must confirm valid PlayerName and AltName before saving
-		// Data is expected to be checked on input, this is just extra validation
+		// Confirms valid PlayerName and AltName before saving (should already be validated, just making sure)
 		if (plugin.isValidUserName(PlayerName) && plugin.isValidUserName(AltName)) {
 			// Player and alt name are valid
 			return da.setAltNameForPlayer(PlayerName, AltName);

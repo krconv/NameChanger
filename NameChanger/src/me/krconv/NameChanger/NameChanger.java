@@ -245,7 +245,7 @@ public class NameChanger extends JavaPlugin {
 	}
 	
 	public boolean isValidUserName(String toTest) {
-		// Ensure contains only valid characters and between 2-16 characters long
+		// Ensures user name contains only valid characters and between 2-16 characters long
 		Pattern p = Pattern.compile("[A-Za-z0-9_]{2,16}");
 		Matcher m = p.matcher(toTest);
 		return m.matches();
