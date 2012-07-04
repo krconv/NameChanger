@@ -13,7 +13,6 @@ import java.util.logging.Level;
 public final class AutoAltDataAccess {
 
 	private static AutoAltDataAccess instance = new AutoAltDataAccess();
-	private ArrayList<PlayerAlt> alts;
 
 	private File altList;
 	private NameChanger plugin;
@@ -36,7 +35,7 @@ public final class AutoAltDataAccess {
 				writer.newLine();
 				writer.close();
 			} catch (IOException e) {
-				// plugin.logger.log(Level.SEVERE, "NameChanger: Could not write to AutomaticAlts.txt"); // Enable once plugin is live
+				plugin.logger.log(Level.SEVERE, "NameChanger: Could not write to AutomaticAlts.txt"); // Enable once plugin is live
 				e.printStackTrace();
 				return false;
 			}
@@ -71,7 +70,7 @@ public final class AutoAltDataAccess {
 			}
 			br.close();
 		} catch (IOException e) {
-			// plugin.logger.log(Level.SEVERE, "NameChanger: Could not read from AutomaticAlts.txt"); // Enable once plugin is live
+			plugin.logger.log(Level.SEVERE, "NameChanger: Could not read from AutomaticAlts.txt"); // Enable once plugin is live
 			e.printStackTrace();
 		}
 		return false;
@@ -99,7 +98,7 @@ public final class AutoAltDataAccess {
 			}
 			br.close();
 		} catch (IOException e) {
-			// plugin.logger.log(Level.SEVERE, "NameChanger: Could not read from AutomaticAlts.txt"); // Enable once plugin is live
+			plugin.logger.log(Level.SEVERE, "NameChanger: Could not read from AutomaticAlts.txt"); // Enable once plugin is live
 			e.printStackTrace();
 		}
 		return null;
@@ -127,7 +126,7 @@ public final class AutoAltDataAccess {
 			}
 			br.close();
 		} catch (IOException e) {
-			// plugin.logger.log(Level.SEVERE, "NameChanger: Could not read from AutomaticAlts.txt"); // Enable once plugin is live
+			plugin.logger.log(Level.SEVERE, "NameChanger: Could not read from AutomaticAlts.txt"); // Enable once plugin is live
 			e.printStackTrace();
 		}
 		return null;
@@ -145,7 +144,7 @@ public final class AutoAltDataAccess {
 			writer.close();
 			return true;
 		} catch (IOException e) {
-			// plugin.logger.log(Level.SEVERE, "NameChanger: Could not write to AutomaticAlts.txt"); // Enable once plugin is live
+			plugin.logger.log(Level.SEVERE, "NameChanger: Could not write to AutomaticAlts.txt"); // Enable once plugin is live
 			e.printStackTrace();
 		}
 		return false; // If we get here, it didn't work
@@ -181,8 +180,7 @@ public final class AutoAltDataAccess {
 					pw.println(line);
 					pw.flush();
 				} else {
-					hasBeenMatched = true; // At least one match has been found,
-											// set this for return value
+					hasBeenMatched = true; // At least one match has been found, set this for return value
 				}
 			}
 			pw.close();
