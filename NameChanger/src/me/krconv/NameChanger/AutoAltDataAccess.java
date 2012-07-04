@@ -8,14 +8,22 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 
 public final class AutoAltDataAccess {
 
 	private static AutoAltDataAccess instance = new AutoAltDataAccess();
-
-	private File altList;
 	private NameChanger plugin;
+	private File altList;
+	
+	// Use 2 custom case-insensitive hash maps, 1 indexed by player and 1 indexed by alt
+	// Allows case-insensitive searching by either player or alt, while preserving original cases
+	private CaseInsensitiveHashMap mPlayerAltList;
+	private CaseInsensitiveHashMap mAltPlayerList;
 
 	private AutoAltDataAccess() {
 		// Private constructor to enforce singleton
@@ -27,6 +35,7 @@ public final class AutoAltDataAccess {
 		altList = new File("plugins/NameChanger/AutomaticAlts.txt"); // Use this when testing outside of minecraft
 		if (!altList.exists()) {
 			try {
+				// Create empty automatic alts file
 				altList.createNewFile();
 				BufferedWriter writer = new BufferedWriter(new FileWriter(altList, true));
 				writer.write("# Storage of Player Names and automatic Alt Names separated by | character");
@@ -35,10 +44,13 @@ public final class AutoAltDataAccess {
 				writer.newLine();
 				writer.close();
 			} catch (IOException e) {
-				plugin.logger.log(Level.SEVERE, "NameChanger: Could not write to AutomaticAlts.txt"); // Enable once plugin is live
+				//plugin.logger.log(Level.SEVERE, "NameChanger: Could not write to AutomaticAlts.txt"); // Enable once plugin is live
 				e.printStackTrace();
 				return false;
 			}
+		} 
+		else {
+			loadAutoAltList(); // Load list into hash map
 		}
 		return true;
 	}
@@ -47,89 +59,71 @@ public final class AutoAltDataAccess {
 		// Return instance of AutoAltDataAccess
 		return instance;
 	}
-
-	public boolean doesPlayerHaveAlt(String PlayerName) {
-		// Returns true if player has alt
+	
+	public boolean loadAutoAltList() {
+		// Loads data from auto alt file into hashmaps to live in memory while plugin is running
+		mPlayerAltList = new CaseInsensitiveHashMap();
+		mAltPlayerList = new CaseInsensitiveHashMap();
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(altList));
 			String line = null;
 
 			// Iterate through current file
-
 			while ((line = br.readLine()) != null) {
-				boolean match = false; // Current record is a match
-				if (!line.startsWith("#")) { // Do not check comments
+				if (!line.startsWith("#")) { // Ignore commented lines
 					String[] data = line.split("\\|");
 					if (data.length == 2) {
-						if (data[0].toLowerCase().equals(PlayerName.toLowerCase())) {
-							br.close();
-							return true;
+						if (!mPlayerAltList.containsKey(data[0].toLowerCase()) && !mAltPlayerList.containsKey(data[1].toLowerCase())) {
+							// Only add as long as player or alt have not already been added (should be 0 duplicates)
+							mPlayerAltList.put(data[0], data[1]);
+							mAltPlayerList.put(data[1], data[0]);
 						}
+						else {
+							// Log scenarios where duplicates exist
+							//plugin.logger.log(Level.WARNING, "NameChanger: Ignoring duplicate player or alt in AutomaticAlts.txt. Entry: " + line); // Enable once plugin is live							
+							System.out.println("NameChanger: Ignoring duplicate player or alt in AutomaticAlts.txt. Entry: " + line); // Enable once plugin is live
+						}
+						
 					}
 				}
 			}
 			br.close();
 		} catch (IOException e) {
-			plugin.logger.log(Level.SEVERE, "NameChanger: Could not read from AutomaticAlts.txt"); // Enable once plugin is live
+			//plugin.logger.log(Level.SEVERE, "NameChanger: Could not read from AutomaticAlts.txt"); // Enable once plugin is live
 			e.printStackTrace();
 		}
-		return false;
+		return true;
+	}
+	
+	public void testWriteHashMap() {
+		Iterator<Entry<String, String>> iter = mPlayerAltList.entrySet().iterator();
+		while (iter.hasNext()) {
+			Map.Entry mAlt = (Map.Entry) iter.next();
+			System.out.println(mAlt.getKey() + " : " + mAlt.getValue());
+		}
+	}
+	
+	public void testWriteHashMap2() {
+		Iterator<Entry<String, String>> iter = mAltPlayerList.entrySet().iterator();
+		while (iter.hasNext()) {
+			Map.Entry mAlt = (Map.Entry) iter.next();
+			System.out.println(mAlt.getKey() + " : " + mAlt.getValue());
+		}
+	}
+
+	public boolean doesPlayerHaveAlt(String PlayerName) {
+		// Returns true if player has alt
+		return mPlayerAltList.containsKey(PlayerName);
 	}
 
 	public String getAltNameForPlayer(String PlayerName) {
 		// Return alt name associated with player name
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(altList));
-			String line = null;
-
-			// Iterate through current file
-
-			while ((line = br.readLine()) != null) {
-				boolean match = false; // Current record is a match
-				if (!line.startsWith("#")) { // Do not check comments
-					String[] data = line.split("\\|");
-					if (data.length == 2) {
-						if (data[0].toLowerCase().equals(PlayerName.toLowerCase())) {
-							br.close();
-							return data[1];
-						}
-					}
-				}
-			}
-			br.close();
-		} catch (IOException e) {
-			plugin.logger.log(Level.SEVERE, "NameChanger: Could not read from AutomaticAlts.txt"); // Enable once plugin is live
-			e.printStackTrace();
-		}
-		return null;
+		return mPlayerAltList.get(PlayerName);
 	}
 
 	public String getPlayerNameForAlt(String AltName) {
-		// Return player name associated with alt name (loops through file til finds first instance)
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(altList));
-			String line = null;
-
-			// Iterate through current file
-
-			while ((line = br.readLine()) != null) {
-				boolean match = false; // Current record is a match
-				if (!line.startsWith("#")) { // Do not check comments
-					String[] data = line.split("\\|");
-					if (data.length == 2) {
-						if (data[1].toLowerCase().equals(AltName.toLowerCase())) {
-							br.close();
-							return data[0];
-						}
-					}
-				}
-			}
-			br.close();
-		} catch (IOException e) {
-			plugin.logger.log(Level.SEVERE, "NameChanger: Could not read from AutomaticAlts.txt"); // Enable once plugin is live
-			e.printStackTrace();
-		}
-		return null;
+		// Return alt name associated with player name
+		return mAltPlayerList.get(AltName);
 	}
 
 	public boolean setAltNameForPlayer(String PlayerName, String AltName) {
@@ -142,9 +136,13 @@ public final class AutoAltDataAccess {
 			writer.write(PlayerName + "|" + AltName);
 			writer.newLine();
 			writer.close();
+			
+			loadAutoAltList(); // Reload new list from updated file
+			
 			return true;
+			
 		} catch (IOException e) {
-			plugin.logger.log(Level.SEVERE, "NameChanger: Could not write to AutomaticAlts.txt"); // Enable once plugin is live
+			//plugin.logger.log(Level.SEVERE, "NameChanger: Could not write to AutomaticAlts.txt"); // Enable once plugin is live
 			e.printStackTrace();
 		}
 		return false; // If we get here, it didn't work
@@ -189,6 +187,8 @@ public final class AutoAltDataAccess {
 			// Delete old file and replace it with new updated temporary file
 			altList.delete();
 			tempFile.renameTo(altList);
+			
+			loadAutoAltList(); // Reload new list from updated file
 
 			return hasBeenMatched;
 
@@ -198,4 +198,17 @@ public final class AutoAltDataAccess {
 		}
 	}
 
+	public class CaseInsensitiveHashMap extends HashMap<String, String> {
+
+		private static final long serialVersionUID = 1L;
+
+		String get(String key) {
+	    	return super.get(key.toLowerCase());
+		}
+		
+		public String put(String key, String value) {
+			return super.put(key.toLowerCase(), value);
+	    }
+	}
+	
 }

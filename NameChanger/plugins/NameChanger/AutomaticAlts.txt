@@ -1,4 +1,7 @@
 # Storage of Player Names and automatic Alt Names separated by | character
 # notch|fakeGuy   <-- Example - Renames notch to fakeGuy
-benjais|3512
-nip|3512
+Benjais|3512YS
+Bsenjai2s|sAa
+EliteSandwich|appyFlanger
+EliteSandwich2|appyFla2nger
+55EliteSandwich2|55appyFla2nger

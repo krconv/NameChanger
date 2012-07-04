@@ -198,15 +198,31 @@ public class NameChanger extends JavaPlugin {
 								player.sendMessage(ChatColor.RED + "Alt <Name> '"  + args[1] + "' is not a possible Minecraft name.");
 								return false;
 							}
-							//Player target = getServer().getPlayer(args[1]); // Changed this so that it works for offline players, I think
-							if (autoAltManager.setAltNameForPlayer(args[1], args[2])) {
-								// Successfully set automatic alt name for target player
-								System.out.print("[NameChanger] "
-										+ player.getName() + " has set "  + args[1] + "'s name automatically change to "
-										+ args[2] + " on login!");
-								player.sendMessage(ChatColor.GREEN
-										+ "You have set " + args[1] + " to automatically log in as " + args[2] + ".");	
+							// Make sure alt name not already in use for another player
+							String conflictingPlayer = autoAltManager.getPlayerNameForAlt(args[1]);
+							if (conflictingPlayer != null) {
+								// Conflict, cannot proceed
+								player.sendMessage(ChatColor.RED + "Player '" + conflictingPlayer + "' already uses that automatic alt. Remove this entry first.");
+								return false;
 							}
+							//Player target = getServer().getPlayer(args[1]); // Changed this so that it works for offline players, I think
+							int setResult;
+							setResult = autoAltManager.setAltNameForPlayer(args[1], args[2]);
+							
+							if (setResult == 0) {
+								// Successfully set automatic alt name for target player
+								System.out.print("[NameChanger] " + player.getName() + " has set "  + args[1] + "'s name automatically change to " + args[2] + " on login!");
+								player.sendMessage(ChatColor.GREEN + "You have set " + args[1] + " to automatically log in as " + args[2] + ".");	
+							} else if (setResult == 1) {
+								// Cannot have more than 1 player assigned to an alt
+								player.sendMessage(ChatColor.RED + "Alt <Name> '" + args[1] + "' is already an automatic alt for another player.");	
+							} else if (setResult == 2) {
+								// Either player or alt is an impossible minecraft name, but we already check that above so no action needed here	
+							} else if (setResult == 3) {
+								// Unknown error - passed verification but somehow didn't complete
+								player.sendMessage(ChatColor.RED + "Unknown error when setting automatic alt for player.");	
+							}
+							
 						}
 					} else {
 						player.sendMessage(ChatColor.RED
