@@ -1,0 +1,28 @@
+name: NameChanger
+main: me.krconv.NameChanger.NameChanger
+version: 1.0
+description: >
+             Change your name!
+commands:
+  name:
+    description: Changes your name!
+permissions:
+    namechanger.*:
+        description: Gives access to all NameChanger commands
+        children:
+            namechanger.basic: true
+            namechanger.name.<name>: true
+            namechanger.other.<name>: true
+            namechanger.reload: true
+    namechanger.basic:
+        description: Allows you to use /name
+        default: op
+    namechanger.name.<name>:
+        description: Allows you to use the name <name>
+        default: op
+    namechanger.other.<name>:
+        description: Allows you to change a player's name to <name>
+        default: op
+    namechanger.reload:
+        description: Allows you to reload the config
+        default: op

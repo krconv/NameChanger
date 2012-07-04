@@ -1,0 +1,3 @@
+#NameChanger Default Config
+broadcastJoinMessage: true
+broadcastQuitMessage: false
