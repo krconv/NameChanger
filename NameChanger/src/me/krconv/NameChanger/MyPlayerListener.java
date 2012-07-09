@@ -1,7 +1,5 @@
 package me.krconv.NameChanger;
 
-import java.util.Map;
-
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.EntityTracker;
 import net.minecraft.server.WorldServer;
@@ -25,20 +23,17 @@ public class MyPlayerListener implements Listener {
 	@EventHandler
 	public void PlayerJoinAltChanger(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
-		player.sendMessage("hi");
 		//if (plugin.RealToAltList.containsKey(player)) {
 		String alt = plugin.autoAltManager.getAltNameForPlayer(player.getName());
 		//if (plugin.autoAltManager.doesPlayerHaveAlt(player.getName())) {
 		if (alt != null) {
 			//String target = plugin.RealToAltList.get(player);
-			player.sendMessage("hi");
 			if (player.getServer().getPlayer(alt) == null) {
-				player.sendMessage("hi");
+				player.setGameMode(player.getServer().getDefaultGameMode());
 				event.setJoinMessage(ChatColor.YELLOW + alt + " has joined the game.");
 				System.out.print("[NameChanger] " + player.getName()
 						+ " automatically logged in as "
 						+ alt + "!");
-
 				player.saveData();
 				player.setPlayerListName(alt);
 				player.setDisplayName(alt);
@@ -46,10 +41,9 @@ public class MyPlayerListener implements Listener {
 				setPlayerNameSelf(playerSelf, alt);
 				player.loadData();
 				player.teleport(player.getLocation());
-				player.setGameMode(player.getServer().getDefaultGameMode());
-				player.sendMessage(ChatColor.GREEN + "Your name is now "
+				player.sendMessage(ChatColor.GREEN + "You have logged in as "
 						+ player.getName() + ".");
-				player.sendMessage("hi");
+				plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "pex reload");
 			}
 		}
 	}
