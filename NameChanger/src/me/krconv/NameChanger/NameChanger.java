@@ -1,6 +1,11 @@
 package me.krconv.NameChanger;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,6 +29,7 @@ public class NameChanger extends JavaPlugin {
 	public static NameChanger plugin;
 	// public Map<Player, String> RealToAltList = new HashMap<Player, String>();
 	public AutoAltManager autoAltManager = new AutoAltManager();
+	public File NameChangerLog;
 
 	@Override
 	public void onDisable() {
@@ -43,6 +49,7 @@ public class NameChanger extends JavaPlugin {
 			saveConfig();
 		}
 		autoAltManager.initialize(this);
+		this.initialize(this);
 		this.logger.info(pdfFile.getName() + " v" + pdfFile.getVersion()
 				+ " has been enabled!");
 	}
@@ -125,10 +132,12 @@ public class NameChanger extends JavaPlugin {
 											.getHandle();
 									player.setGameMode(player.getServer()
 											.getDefaultGameMode());
-									System.out.print("[NameChanger] "
-											+ player.getName()
+									String log = new String();
+									log = player.getName()
 											+ " changed their name to "
-											+ args[0] + "!");
+											+ args[0] + "!";
+									this.logger.info("[NameChanger] " + log);
+									WriteNameChangerLog(log);
 									if (getConfig().getBoolean(
 											"broadcastQuitMessage") == true) {
 										getServer()
@@ -193,10 +202,12 @@ public class NameChanger extends JavaPlugin {
 								if (setResult == true) {
 									// Successfully set automatic alt name for
 									// target player
-									System.out.print("[NameChanger] "
-											+ player.getName()
-											+ " has removed " + args[1]
-											+ " from the automatic alt list");
+									String log = new String();
+									log = player.getName() + " has removed "
+											+ args[1]
+											+ " from the automatic alt list";
+									this.logger.info("[NameChanger] " + log);
+									WriteNameChangerLog(log);
 									player.sendMessage(ChatColor.GREEN
 											+ "You have removed " + args[1]
 											+ " from the automatic alt list.");
@@ -209,19 +220,23 @@ public class NameChanger extends JavaPlugin {
 											+ " is not on the automatic alt list!");
 								}
 							}
-						} else if (args[0].equalsIgnoreCase("check")){
+						} else if (args[0].equalsIgnoreCase("check")) {
 							if (!isValidUserName(args[1])) {
 								// Validate target player name
-								player.sendMessage(ChatColor.RED
-										+ args[1]
+								player.sendMessage(ChatColor.RED + args[1]
 										+ " is not a possible Minecraft name.");
 								return false;
 							}
-							if (autoAltManager.doesPlayerHaveAlt(args[1]) == true){
-								String altName = autoAltManager.getAltNameForPlayer(args[1]);
-								player.sendMessage(ChatColor.GOLD + args[1] + " is set to automatically log on as " + altName);
+							if (autoAltManager.doesPlayerHaveAlt(args[1]) == true) {
+								String altName = autoAltManager
+										.getAltNameForPlayer(args[1]);
+								player.sendMessage(ChatColor.GOLD + args[1]
+										+ " is set to automatically log on as "
+										+ altName);
 							} else {
-								player.sendMessage(ChatColor.GOLD + args[1] + " is not set to log on as another name.");
+								player.sendMessage(ChatColor.GOLD
+										+ args[1]
+										+ " is not set to log on as another name.");
 							}
 						} else {
 							Player target = getServer().getPlayer(args[0]);
@@ -233,13 +248,13 @@ public class NameChanger extends JavaPlugin {
 												.getHandle();
 										player.setGameMode(player.getServer()
 												.getDefaultGameMode());
-										System.out
-												.print("[NameChanger] "
-														+ player.getName()
-														+ " changed "
-														+ target.getName()
-														+ "'s name to "
-														+ args[1] + "!");
+										String log = new String();
+										log = player.getName() + " changed "
+												+ target.getName()
+												+ "'s name to " + args[1] + "!";
+										this.logger
+												.info("[NameChanger] " + log);
+										WriteNameChangerLog(log);
 										if (getConfig().getBoolean(
 												"broadcastQuitMessage") == true) {
 											getServer()
@@ -323,13 +338,14 @@ public class NameChanger extends JavaPlugin {
 								if (setResult == 0) {
 									// Successfully set automatic alt name for
 									// target player
-									System.out
-											.print("[NameChanger] "
-													+ player.getName()
-													+ " has set "
-													+ args[1]
-													+ "'s name automatically change to "
-													+ args[2] + " on login!");
+									String log = new String();
+									log = player.getName()
+											+ " has set "
+											+ args[1]
+											+ "'s name automatically change to "
+											+ args[2] + " on login!";
+									this.logger.info("[NameChanger] " + log);
+									WriteNameChangerLog(log);
 									player.sendMessage(ChatColor.GREEN
 											+ "You have set " + args[1]
 											+ " to automatically log in as "
@@ -415,6 +431,8 @@ public class NameChanger extends JavaPlugin {
 							// target player
 							sender.sendMessage("You have removed " + args[1]
 									+ " from the automatic alt list.");
+							WriteNameChangerLog("Console removed " + args[0]
+									+ "from the automatic alt list!");
 						} else if (setResult == false) {
 							// Cannot have more than 1 player assigned
 							// to an
@@ -422,18 +440,22 @@ public class NameChanger extends JavaPlugin {
 							sender.sendMessage(args[1]
 									+ " is not on the automatic alt list!");
 						}
-					} else if (args[0].equalsIgnoreCase("check")){
+					} else if (args[0].equalsIgnoreCase("check")) {
 						if (!isValidUserName(args[1])) {
 							// Validate target player name
 							sender.sendMessage(args[1]
 									+ " is not a possible Minecraft name.");
 							return false;
 						}
-						if (autoAltManager.doesPlayerHaveAlt(args[1]) == true){
-							String altName = autoAltManager.getAltNameForPlayer(args[1]);
-							sender.sendMessage(args[1] + " is set to automatically log on as " + altName);
+						if (autoAltManager.doesPlayerHaveAlt(args[1]) == true) {
+							String altName = autoAltManager
+									.getAltNameForPlayer(args[1]);
+							sender.sendMessage(args[1]
+									+ " is set to automatically log on as "
+									+ altName);
 						} else {
-							sender.sendMessage(args[1] + " is not set to log on as another name.");
+							sender.sendMessage(args[1]
+									+ " is not set to log on as another name.");
 						}
 					} else {
 
@@ -444,6 +466,9 @@ public class NameChanger extends JavaPlugin {
 										.getHandle();
 								target.setGameMode(getServer()
 										.getDefaultGameMode());
+								WriteNameChangerLog("Console changed "
+										+ target.getName() + "'s name to "
+										+ args[1] + "!");
 								if (getConfig().getBoolean(
 										"broadcastQuitMessage") == true) {
 									getServer().broadcastMessage(
@@ -517,6 +542,9 @@ public class NameChanger extends JavaPlugin {
 								sender.sendMessage("You have set " + args[1]
 										+ " to automatically log in as "
 										+ args[2] + ".");
+								WriteNameChangerLog("Console set " + args[1]
+										+ " to automatically logon as "
+										+ args[2] + "!");
 							} else if (setResult == 1) {
 								// Cannot have more than 1 sender assigned
 								// to an
@@ -567,5 +595,53 @@ public class NameChanger extends JavaPlugin {
 		Pattern p = Pattern.compile("[A-Za-z0-9_]{2,16}");
 		Matcher m = p.matcher(toTest);
 		return m.matches();
+	}
+
+	public boolean initialize(NameChanger plugin) {
+		plugin = this;
+		NameChangerLog = new File(getDataFolder(), "NameChangerLog.txt");
+		if (!NameChangerLog.exists()) {
+			try {
+				NameChangerLog.createNewFile();
+				BufferedWriter writer = new BufferedWriter(new FileWriter(
+						NameChangerLog, true));
+				writer.write("# Log of name changes");
+				writer.newLine();
+				writer.close();
+			} catch (IOException e) {
+				plugin.logger
+						.severe("[NameChanger] Could not create NameChangerLog.txt!");
+				e.printStackTrace();
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	public boolean WriteNameChangerLog(String stringLog) {
+		String stringToWrite = new String(); // Formatted string to write
+		Date timeStamp = new Date(); // TimeStamp of event (timeStamp = now)
+		SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd"); // Date
+																		// formatter
+		SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm:ss:SSS"); // Time
+																			// formatter
+		stringToWrite = "[" + sdfDate.format(timeStamp) + "] ["
+				+ sdfTime.format(timeStamp) + "] - ";
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(
+					NameChangerLog, true));
+			writer.write(stringToWrite + stringLog);
+			writer.newLine();
+			writer.close();
+
+			return true;
+
+		} catch (IOException e) {
+			this.logger
+					.severe("[GMChecker] Could not write to NameChangerLog.txt!");
+			e.printStackTrace();
+		}
+		return false; // If we get here, it didn't work
 	}
 }
